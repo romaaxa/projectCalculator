@@ -126,7 +126,7 @@ function handlerCallBackForm(event) {
         priceCalculation(target);
     }
 
-    //if asapt is not checked = mobileTemplates disabled
+    //if adapt is not checked = mobileTemplates disabled
     if (mobileTemplatesDisabled && adaptDisabled.checked) {
         mobileTemplatesDisabled.disabled = false;
     } else {
