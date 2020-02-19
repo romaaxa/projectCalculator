@@ -22,16 +22,10 @@ const startButton = document.querySelector('.start-button'),
     total = document.querySelector('.total'),
     fastRange = document.querySelector('.fast-range'),
     totalPriceSum = document.querySelector('.total_price__sum'), //to write new prices 
-    mobileTemplatesDisabled = document.getElementById('mobileTemplates');
+    mobileTemplatesDisabled = document.getElementById('mobileTemplates'),
+    adaptDisabled = document.getElementById('adapt');
 
 // console.dir(startButton)  output like an object
-
-if (mobileTemplatesDisabled) {
-    mobileTemplatesDisabled.disabled = true;
-}
-// else {
-//     mobileTemplatesDisabled.disabled = true;
-// }
 
 //add onclick Event
 startButton.addEventListener('click', function clickButton() {
@@ -130,6 +124,13 @@ function handlerCallBackForm(event) {
 
     if (target.classList.contains('calc-handler')) {
         priceCalculation(target);
+    }
+
+    //if asapt is not checked = mobileTemplates disabled
+    if (mobileTemplatesDisabled && adaptDisabled.checked) {
+        mobileTemplatesDisabled.disabled = false;
+    } else {
+        mobileTemplatesDisabled.disabled = true;
     }
 };
 
