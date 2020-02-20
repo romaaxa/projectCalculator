@@ -1,3 +1,5 @@
+const DAY_STRING = ['день', 'дня', 'дней'];
+
 //table const from all te options and checkboxes
 const DATA = {
     whichSite: ['landing', 'multiPage', 'onlineStore'],
@@ -23,7 +25,19 @@ const startButton = document.querySelector('.start-button'),
     fastRange = document.querySelector('.fast-range'),
     totalPriceSum = document.querySelector('.total_price__sum'), //to write new prices 
     mobileTemplatesDisabled = document.getElementById('mobileTemplates'),
-    adaptDisabled = document.getElementById('adapt');
+    adaptDisabled = document.getElementById('adapt'),
+    typeSite = document.querySelector('.type-site'),
+    maxDeadline = document.querySelector('.max-deadline'),
+    rangeDeadline = document.querySelector('.range-deadline'),
+    deadlineValue = document.querySelector('.deadline-value');
+
+
+//megausefull (XD) true
+//for the declansion of words
+function declOfNum(n, titles) {
+    return n + ' ' + titles[n % 10 === 1 && n % 100 !== 11 ?
+        0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2];
+}
 
 // console.dir(startButton)  output like an object
 
@@ -61,10 +75,28 @@ endButton.addEventListener('click', function () {
     showElements(total);
 });
 
+
+//randering of content by clicking
+function renderTextContent(total, site, maxDay, minDay) {
+    totalPriceSum.textContent = total; //output result value
+
+    typeSite.textContent = site;
+
+    maxDeadline.textContent = declOfNum(maxDay, DAY_STRING);
+    rangeDeadline.min = minDay;
+    rangeDeadline.max = maxDay;
+    deadlineValue.textContent = declOfNum(rangeDeadline.value, DAY_STRING);
+
+}
+
 function priceCalculation(elem) {
     let result = 0,
         index = 0,
-        optionsS = [];
+        optionsS = [],
+        site = '', //which site is selected -> to this 'site'
+        maxDeadLineDay = DATA.deadlineDay[index][1],
+        minDeadLineDay = DATA.deadlineDay[index][0];
+
     //all the checkboxes reseted
     if (elem.name === 'whichSite') {
         for (const item of formCalculate.elements) {
@@ -78,6 +110,8 @@ function priceCalculation(elem) {
     for (const item of formCalculate.elements) {
         if (item.name === 'whichSite' && item.checked) {
             index = DATA.whichSite.indexOf(item.value); //get index of checked element
+            site = item.dataset.site; //output text of the dataset
+            maxDeadLineDay = DATA.deadlineDay[index][1];
         } else if (item.classList.contains('calc-handler') && item.checked) {
             optionsS.push(item.value); //view only checked elements
         }
@@ -102,7 +136,7 @@ function priceCalculation(elem) {
 
     result += DATA.price[index]; //output with correct price (get index)
 
-    totalPriceSum.textContent = result; //output result value
+    renderTextContent(result, site, maxDeadLineDay, minDeadLineDay);
 }
 
 //mainfunc, start calculation
@@ -126,11 +160,12 @@ function handlerCallBackForm(event) {
         priceCalculation(target);
     }
 
-    //if adapt is not checked = mobileTemplates disabled
-    if (mobileTemplatesDisabled && adaptDisabled.checked) {
+    //if asapt is not checked = mobileTemplates disabled
+    if (adaptDisabled.checked) {
         mobileTemplatesDisabled.disabled = false;
     } else {
         mobileTemplatesDisabled.disabled = true;
+        mobileTemplatesDisabled.checked = false;
     }
 };
 
