@@ -29,7 +29,21 @@ const startButton = document.querySelector('.start-button'),
     typeSite = document.querySelector('.type-site'),
     maxDeadline = document.querySelector('.max-deadline'),
     rangeDeadline = document.querySelector('.range-deadline'),
-    deadlineValue = document.querySelector('.deadline-value');
+    deadlineValue = document.querySelector('.deadline-value'),
+
+    desktopTemplates = document.getElementById('desktopTemplates'),
+    editable = document.getElementById('editable'),
+    mobileTemplatesValue = document.querySelector('.mobileTemplates_value'),
+    adaptValue = document.querySelector('.adapt_value'),
+    desktopTemplatesValue = document.querySelector('.desktopTemplates_value'),
+    editableValue = document.querySelector('.editable_value'),
+    calcDescription = document.querySelector('.calc-description'),
+    metrikaYandex = document.getElementById('metrikaYandex'),
+    analyticsGoogle = document.getElementById('analyticsGoogle'),
+    sendOrder = document.getElementById('sendOrder'),
+    cardHead = document.querySelector('.card-head'),
+    totalPrice = document.querySelector('.total_price'),
+    firstFieldset = document.querySelector('.first-fieldset');
 
 
 //megausefull (XD) true
@@ -56,11 +70,29 @@ function hideElements(element) {
     element.style.display = 'none';
 }
 
+function moveBackTotal() {
+    if (document.documentElement.getBoundingClientRect().bottom > document.documentElement.clientHeight + 200) {
+        totalPrice.classList.remove('totalPriceBottom');
+        firstFieldset.after(totalPrice);
+        window.addEventListener('scroll', moveBackTotal);
+        window.removeEventListener('scroll', moveTotal);
+    }
+}
+
+function moveTotal() {
+    if (document.documentElement.getBoundingClientRect().bottom < document.documentElement.clientHeight + 200) {
+        totalPrice.classList.add('totalPriceBottom');
+        endButton.before(totalPrice);
+        window.removeEventListener('scroll', moveTotal);
+        window.addEventListener('scroll', moveBackTotal);
+    }
+}
 
 //event Show/Hide block
 startButton.addEventListener('click', function () {
     showElements(mainForm);
     hideElements(firstScreen);
+    window.addEventListener('scroll', moveTotal);
 });
 
 endButton.addEventListener('click', function () {
@@ -72,9 +104,43 @@ endButton.addEventListener('click', function () {
         }
     }
 
+    cardHead.textContent = "Заявка на разработку сайта";
+    hideElements(totalPriceSum);
+    showElements(total);
+
     showElements(total);
 });
 
+function dopOptionsString() {
+    //Подключим Яндекс Метрику, Гугл Аналитику и отправку заявок на почту.
+    let str = "";
+
+    if (metrikaYandex.checked || analyticsGoogle.checked || sendOrder.checked) {
+        str += "Подключим";
+        if (metrikaYandex.checked) {
+            str += " Яндекс Метрику";
+            if (analyticsGoogle.checked && sendOrder.checked) {
+                str += ", Гугл Аналитику и отправку заявок на почту."
+                return;
+            }
+            if (analyticsGoogle.checked || sendOrder.checked) {
+                str += " и";
+            }
+        }
+        if (analyticsGoogle.checked) {
+            str += " Гугл Аналитику";
+            if (sendOrder.checked) {
+                str += " и";
+            }
+        }
+        if (sendOrder.checked) {
+            str += " отправку заявок на почту";
+        }
+        str += ".";
+    }
+
+    return str;
+}
 
 //randering of content by clicking
 function renderTextContent(total, site, maxDay, minDay) {
@@ -87,16 +153,30 @@ function renderTextContent(total, site, maxDay, minDay) {
     rangeDeadline.max = maxDay;
     deadlineValue.textContent = declOfNum(rangeDeadline.value, DAY_STRING);
 
+    //change no to yes functionality
+    adaptValue.textContent = adapt.checked ? 'Да' : 'Нет';
+    mobileTemplatesValue.textContent = mobileTemplates.checked ? 'Да' : 'Нет';
+    desktopTemplatesValue.textContent = desktopTemplates.checked ? 'Да' : 'Нет';
+    editableValue.textContent = editable.checked ? 'Да' : 'Нет';
+    if (!adapt.checked) {
+        mobileTemplatesValue.textContent = 'Нет';
+    }
+
+    calcDescription.textContent = `Сделаем ${site} ${adapt.checked ?
+        ', адаптированный под мобильные устройства и планшеты.' : ''}
+        ${editable.checked ? 'Установим панель админстратора, чтобы вы могли самостоятельно менять содержание на сайте без разработчика' : ''}.
+        ${dopOptionsString()}
+    `;
 }
 
-function priceCalculation(elem) {
+function priceCalculation(elem = {}) {
     let result = 0,
         index = 0,
         optionsS = [],
         site = '', //which site is selected -> to this 'site'
         maxDeadLineDay = DATA.deadlineDay[index][1],
-        minDeadLineDay = DATA.deadlineDay[index][0];
-
+        minDeadLineDay = DATA.deadlineDay[index][0],
+        overPercent = 0;
     //all the checkboxes reseted
     if (elem.name === 'whichSite') {
         for (const item of formCalculate.elements) {
@@ -114,8 +194,15 @@ function priceCalculation(elem) {
             maxDeadLineDay = DATA.deadlineDay[index][1];
         } else if (item.classList.contains('calc-handler') && item.checked) {
             optionsS.push(item.value); //view only checked elements
+        } else if (item.classList.contains('want-faster') && item.checked) {
+            //calculationg when want faster icon is checked
+            const overDay = (maxDeadLineDay - rangeDeadline.value);
+            overPercent = overDay * (DATA.deadlinePercent[index] / 100);
+
         }
     }
+
+    result += DATA.price[index]; //output with correct price (get index)
 
     //add a table price to start price by clicking on a checkbox
     optionsS.forEach(function (key) {
@@ -134,8 +221,7 @@ function priceCalculation(elem) {
         }
     })
 
-    result += DATA.price[index]; //output with correct price (get index)
-
+    result += result * overPercent;
     renderTextContent(result, site, maxDeadLineDay, minDeadLineDay);
 }
 
@@ -170,6 +256,8 @@ function handlerCallBackForm(event) {
 };
 
 formCalculate.addEventListener('change', handlerCallBackForm);
+
+priceCalculation();
 
 
 
